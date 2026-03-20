@@ -996,20 +996,6 @@ def get_balance():
 
 # ==================== EMAIL VERIFICATION ====================
 
-verification_codes = {}
-
-def generate_verification_code():
-    import random
-    return ''.join([str(random.randint(0, 9)) for _ in range(4)])
-
-def send_mock_verification_email(email, code):
-    logger.info(f"[MOCK EMAIL] To: {email}, Code: {code}")
-    print(f"\n{'='*50}")
-    print(f"📧 MOCK EMAIL SENT")
-    print(f"To: {email}")
-    print(f"Code: {code}")
-    print(f"{'='*50}\n")
-
 @app.route(f'{API_PREFIX}/auth/send-code', methods=['POST'])
 def send_verification_code():
     """Send email verification code."""

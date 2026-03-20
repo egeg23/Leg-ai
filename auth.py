@@ -14,10 +14,9 @@ from werkzeug.security import generate_password_hash
 import os
 
 # Configuration
-JWT_SECRET = os.environ.get('JWT_SECRET_KEY') or os.urandom(32).hex()
-if not os.environ.get('JWT_SECRET_KEY'):
-    import warnings
-    warnings.warn('JWT_SECRET_KEY not set! Using random key - sessions will not persist after restart.')
+JWT_SECRET = os.environ.get('JWT_SECRET_KEY')
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET_KEY environment variable must be set")
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
 REFRESH_TOKEN_EXPIRATION_DAYS = 30
