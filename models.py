@@ -342,13 +342,6 @@ class PaymentTransaction(db.Model):
         return f'<PaymentTransaction {self.transaction_id} {self.amount}>'
 
 
-def init_db(app):
-    """Initialize database with Flask app."""
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-
-
 # ==================== CREDIT SYSTEM MODELS ====================
 
 class Tariff(db.Model):
@@ -366,6 +359,7 @@ class Tariff(db.Model):
     has_defense_speech = db.Column(db.Boolean, default=False)  # речь защиты
     has_case_audit = db.Column(db.Boolean, default=False)  # аудит судебной практики
     has_explanation_bonus = db.Column(db.Boolean, default=False)  # бонусное разъяснение
+    is_active = db.Column(db.Boolean, default=True, nullable=False)  # активен ли тариф
     description = db.Column(db.Text)
     
     # Relationships
@@ -385,6 +379,7 @@ class Tariff(db.Model):
             'has_defense_speech': self.has_defense_speech,
             'has_case_audit': self.has_case_audit,
             'has_explanation_bonus': self.has_explanation_bonus,
+            'is_active': self.is_active,
             'description': self.description
         }
         

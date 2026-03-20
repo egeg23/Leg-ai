@@ -193,4 +193,3 @@ def generate_case_report(case_data, output_dir):
     return report_path
 
 
-from datetime import datetime
