@@ -28,7 +28,7 @@ from auth import (
     refresh_access_token
 )
 from document_generator import generate_case_report, generate_legal_document_docx
-from kimi_api import analyze_case_documents, check_context_consistency, get_document_type_name
+from kimi_api import analyze_case_documents, check_context_consistency, get_document_type_name, generate_legal_document
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -856,6 +856,7 @@ def confirm_payment():
     # Mark transaction as completed
     transaction.mark_completed()
     
+    case = None
     # Mark case as paid
     if transaction.case_id:
         case = Case.query.get(transaction.case_id)
@@ -966,8 +967,8 @@ def get_balance():
                 'code': tariff.code,
                 'credits_total': active_tariff.credits_total,
                 'credits_used': active_tariff.credits_used,
-                'credits_remaining': active_tariff.credits_remaining,
-                'expires_at': active_tariff.end_date.isoformat() if active_tariff.end_date else None
+                'credits_remaining': active_tariff.get_remaining_credits(),
+                'expires_at': active_tariff.expires_at.isoformat() if active_tariff.expires_at else None
             }
     
     notifications = []
