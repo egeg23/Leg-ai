@@ -57,24 +57,25 @@ def deduct_credit(user_id, count=1):
         is_active=True
     ).order_by(UserTariff.activated_at.asc()).all()
     
+    # Check total available credits first
+    total_available = sum(ut.get_remaining_credits() for ut in user_tariffs)
+    if total_available < count:
+        return False, get_user_balance(user_id)['credits_remaining']
+    
     remaining_to_deduct = count
     
     for ut in user_tariffs:
         available = ut.get_remaining_credits()
         if available >= remaining_to_deduct:
             ut.credits_used += remaining_to_deduct
-            db.session.commit()
-            return True, get_user_balance(user_id)['credits_remaining']
+            remaining_to_deduct = 0
+            break
         elif available > 0:
             ut.credits_used += available
             remaining_to_deduct -= available
     
     db.session.commit()
-    
-    if remaining_to_deduct == 0:
-        return True, get_user_balance(user_id)['credits_remaining']
-    
-    return False, get_user_balance(user_id)['credits_remaining']
+    return True, get_user_balance(user_id)['credits_remaining']
 
 
 def check_balance_notifications(user_id, logger=None):
