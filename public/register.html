@@ -203,7 +203,9 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Save tokens
+                    // SECURITY TODO: Move to HttpOnly cookies in Stage 3
+                    // Current: localStorage (vulnerable to XSS)
+                    // Target: HttpOnly + Secure + SameSite cookies set by backend
                     localStorage.setItem('access_token', data.data.tokens.access_token);
                     localStorage.setItem('refresh_token', data.data.tokens.refresh_token);
                     localStorage.setItem('user', JSON.stringify(data.data.user));

@@ -114,6 +114,14 @@
                 cases.filter(c => c.status === 'analyzing' || c.status === 'pending').length;
         }
 
+        // XSS protection: escape HTML
+        function escapeHtml(text) {
+            if (typeof text !== 'string') return text;
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function displayCases(cases) {
             const container = document.getElementById('cases-list');
             const emptyState = document.getElementById('empty-state');
@@ -127,17 +135,17 @@
             container.innerHTML = cases.map(c => `
                 <div class="case-card">
                     <div class="case-info">
-                        <h3>${c.case_title}</h3>
+                        <h3>${escapeHtml(c.case_title)}</h3>
                         <div class="case-meta">
-                            <span>${c.document_type_display || 'Документ'}</span>
+                            <span>${escapeHtml(c.document_type_display) || 'Документ'}</span>
                             <span>•</span>
-                            <span>${formatDate(c.created_at)}</span>
+                            <span>${escapeHtml(formatDate(c.created_at))}</span>
                             <span>•</span>
                             <span>${c.price.toLocaleString()} ₽</span>
                         </div>
                     </div>
                     <div style="display:flex;align-items:center;gap:1rem;">
-                        <span class="case-status status-${c.status}">${c.status_display}</span>
+                        <span class="case-status status-${escapeHtml(c.status)}">${escapeHtml(c.status_display)}</span>
                         <div class="case-actions">
                             ${getActionButtons(c)}
                         </div>

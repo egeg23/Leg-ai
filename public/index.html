@@ -187,16 +187,23 @@
 
         function checkAuthStatus() {
             const token = localStorage.getItem('access_token');
+            const authRequired = document.getElementById('auth-required');
+            const docForm = document.getElementById('document-form');
+            const navDashboard = document.getElementById('nav-dashboard');
+            const navLogout = document.getElementById('nav-logout');
+            const navLogin = document.getElementById('nav-login');
+            const navRegister = document.getElementById('nav-register');
+            
             if (token) {
-                document.getElementById('auth-required').style.display = 'none';
-                document.getElementById('document-form').style.display = 'block';
-                document.getElementById('nav-dashboard').style.display = 'inline';
-                document.getElementById('nav-logout').style.display = 'inline';
-                document.getElementById('nav-login').style.display = 'none';
-                document.getElementById('nav-register').style.display = 'none';
+                if (authRequired) authRequired.style.display = 'none';
+                if (docForm) docForm.style.display = 'block';
+                if (navDashboard) navDashboard.style.display = 'inline';
+                if (navLogout) navLogout.style.display = 'inline';
+                if (navLogin) navLogin.style.display = 'none';
+                if (navRegister) navRegister.style.display = 'none';
             } else {
-                document.getElementById('auth-required').style.display = 'block';
-                document.getElementById('document-form').style.display = 'none';
+                if (authRequired) authRequired.style.display = 'block';
+                if (docForm) docForm.style.display = 'none';
             }
         }
 
