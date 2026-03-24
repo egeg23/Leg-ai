@@ -308,23 +308,30 @@
             try {
                 // Get or create token
                 let token = localStorage.getItem('token');
+                let savedUser = localStorage.getItem('legalai_user');
+                
                 if (!token) {
-                    const email = 'user_' + Date.now() + '@legalai.ru';
+                    const timestamp = Date.now();
+                    const username = 'user_' + timestamp;
+                    const email = username + '@legalai.ru';
+                    
                     const regRes = await fetch(`${API_BASE}/register`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({username: email, email: email, password: 'pass123'})
+                        body: JSON.stringify({username: username, email: email, password: 'pass123'})
                     });
+                    
                     if (regRes.ok) {
                         const loginRes = await fetch(`${API_BASE}/login`, {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({username: email, password: 'pass123'})
+                            body: JSON.stringify({username: username, password: 'pass123'})
                         });
                         const loginData = await loginRes.json();
                         if (loginData.success) {
                             token = loginData.data.token;
                             localStorage.setItem('token', token);
+                            localStorage.setItem('legalai_user', username);
                         }
                     }
                 }
