@@ -1,32 +1,13 @@
 name: CodeRabbit Review
-
 on:
   pull_request:
     types: [opened, synchronize]
-  push:
-    branches: [main, master]
-
 jobs:
   review:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          
-      - name: Install dependencies
-        run: npm ci || npm install
-        
-      - name: Run CodeRabbit Review
-        uses: coderabbitai/action@v1
+      - uses: coderabbitai/action@v1
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Auto-fix suggestions
-        run: |
-          echo "Applying CodeRabbit suggestions..."
-          # Auto-fix will be applied here
