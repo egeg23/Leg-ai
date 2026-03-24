@@ -1,0 +1,39 @@
+language: "ru"
+early_access: false
+reviews:
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_filters: []
+  path_instructions:
+    - path: "public/*.html"
+      instructions: |
+        Review HTML files for:
+        - Semantic HTML structure
+        - Accessibility (ARIA labels, alt text)
+        - Mobile responsiveness
+        - Inline JavaScript best practices
+        - API integration patterns
+        - Error handling in fetch requests
+    - path: "**/*.js"
+      instructions: |
+        Review JavaScript for:
+        - Modern ES6+ syntax
+        - Error handling
+        - Async/await patterns
+        - DOM manipulation efficiency
+        - API call patterns
+        - LocalStorage usage
+  auto_review:
+    enabled: true
+    ignore_title_keywords: []
+    drafts: false
+  tools:
+    eslint:
+      enabled: true
+    prettier:
+      enabled: true
+chat:
+  auto_reply: true

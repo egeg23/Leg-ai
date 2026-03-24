@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Документ готов — Legal AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f9fafb;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 50px;
+        }
+        h1 {
+            font-size: 28px;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+        .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+        .doc-box {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        .doc-icon {
+            width: 48px;
+            height: 48px;
+            background: #667eea;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .doc-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        .doc-info {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 18px 36px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            margin-bottom: 16px;
+        }
+        .secondary {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="success-icon">✓</div>
+        
+        <h1>Документ готов!</h1>
+        <p class="subtitle">Ваш юридический документ успешно сгенерирован</p>
+        
+        <div class="doc-box">
+            <div class="doc-icon">📄</div>
+            <div class="doc-name" id="docName">Юридический документ</div>
+            <div class="doc-info">Формат: Microsoft Word (.docx)</div>
+        </div>
+        
+        <button class="download-btn" id="downloadBtn">
+            📥 Скачать документ
+        </button>
+        
+        <div>
+            <a href="/legal/" class="secondary">← Создать ещё документ</a>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/legal/api';
+        const urlParams = new URLSearchParams(window.location.search);
+        const caseId = urlParams.get('case_id');
+        
+        if (caseId) {
+            // Load case info
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetch(`${API_BASE}/case/${caseId}`, {
+                    headers: {'Authorization': 'Bearer ' + token}
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        const types = {
+                            complaint: 'Исковое заявление',
+                            appeal: 'Апелляционная жалоба',
+                            petition: 'Претензия',
+                            statement: 'Стратегия защиты'
+                        };
+                        const name = types[data.data.document_type] || 'Юридический документ';
+                        document.getElementById('docName').textContent = name;
+                    }
+                })
+                .catch(console.error);
+            }
+            
+            // Download handler
+            document.getElementById('downloadBtn').onclick = async () => {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Сессия истекла');
+                    return;
+                }
+                
+                const btn = document.getElementById('downloadBtn');
+                btn.textContent = '⏳ Загрузка...';
+                
+                try {
+                    const res = await fetch(`${API_BASE}/download/${caseId}`, {
+                        headers: {'Authorization': 'Bearer ' + token}
+                    });
+                    
+                    if (res.ok) {
+                        const blob = await res.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `document_${caseId}.docx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        btn.textContent = '✓ Скачано';
+                    } else {
+                        alert('Ошибка скачивания');
+                        btn.textContent = '📥 Скачать документ';
+                    }
+                } catch (e) {
+                    alert('Ошибка: ' + e.message);
+                    btn.textContent = '📥 Скачать документ';
+                }
+            };
+        }
+    </script>
+</body>
+</html>

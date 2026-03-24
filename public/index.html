@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal AI — Генерация юридических документов</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .hero {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        .hero h1 { font-size: 42px; font-weight: 700; margin-bottom: 16px; }
+        .hero p { font-size: 18px; opacity: 0.9; }
+        .upload-container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .upload-zone {
+            border: 3px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 50px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 24px;
+        }
+        .upload-zone:hover, .upload-zone.active {
+            border-color: #667eea;
+            background: #f3f4f6;
+        }
+        .upload-icon { font-size: 48px; margin-bottom: 12px; }
+        .upload-text { font-size: 18px; font-weight: 500; color: #374151; margin-bottom: 8px; }
+        .upload-subtext { font-size: 14px; color: #6b7280; }
+        .selected-files {
+            display: none;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .selected-files.visible { display: block; }
+        .file-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 4px;
+            font-size: 14px;
+        }
+        .file-tag button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #ef4444;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+        .types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .type-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .type-card:hover { border-color: #667eea; }
+        .type-card.selected {
+            border-color: #667eea;
+            background: #eff6ff;
+        }
+        .type-card input { display: none; }
+        .type-icon { font-size: 24px; }
+        .type-content { flex: 1; }
+        .type-title { font-weight: 600; color: #111827; }
+        .type-desc { font-size: 13px; color: #6b7280; }
+        .comment-section { margin-bottom: 24px; }
+        .comment-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            resize: vertical;
+        }
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .submit-btn:hover { background: #059669; }
+        .submit-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-message {
+            color: #dc2626;
+            margin-top: 12px;
+            padding: 12px;
+            background: #fee2e2;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/legal/" class="logo">⚖️ Legal AI</a>
+    </header>
+    
+    <main class="main">
+        <div class="hero">
+            <h1>Генерация юридических документов</h1>
+            <p>Загрузите описание дела — получите готовый документ за 5 минут</p>
+        </div>
+        
+        <div class="upload-container">
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📎</div>
+                <div class="upload-text">Перетащите файлы или нажмите для выбора</div>
+                <div class="upload-subtext">Поддерживаются: PDF, DOC, DOCX, TXT, JPG, PNG</div>
+            </div>
+            <input type="file" id="fileInput" multiple style="display:none" onchange="handleFiles(this.files)">
+            
+            <div class="selected-files" id="selectedFiles">
+                <div style="font-weight:500;margin-bottom:8px">📎 Загруженные файлы:</div>
+                <div id="fileList"></div>
+            </div>
+            
+            <div class="section-title">Выберите типы документов для генерации:</div>
+            <div class="types-grid">
+                <label class="type-card selected" onclick="toggleType(this)">
+                    <input type="checkbox" name="docType" value="complaint" checked>
+                    <span class="type-icon">📋</span>
+                    <div class="type-content">
+                        <div class="type-title">Исковое заявление</div>
+                        <div class="type-desc">Для подачи в суд первой инстанции</div>
+                    </div>
+                </label>
+                <label class="type-card" onclick="toggleType(this)">
+                    <input type="checkbox" name="docType" value="appeal">
+                    <span class="type-icon">📨</span>
+                    <div class="type-content">
+                        <div class="type-title">Апелляционная жалоба</div>
+                        <div class="type-desc">Обжалование решения суда</div>
+                    </div>
+                </label>
+                <label class="type-card" onclick="toggleType(this)">
+                    <input type="checkbox" name="docType" value="petition">
+                    <span class="type-icon">📢</span>
+                    <div class="type-content">
+                        <div class="type-title">Претензия</div>
+                        <div class="type-desc">Досудебное урегулирование</div>
+                    </div>
+                </label>
+                <label class="type-card" onclick="toggleType(this)">
+                    <input type="checkbox" name="docType" value="statement">
+                    <span class="type-icon">📖</span>
+                    <div class="type-content">
+                        <div class="type-title">Стратегия защиты</div>
+                        <div class="type-desc">План действий по делу</div>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="comment-section">
+                <label class="comment-label">💬 Комментарий по документам (необязательно)</label>
+                <textarea class="comment-textarea" id="userComment" placeholder="Опишите суть дела, что произошло, какие документы у вас есть..."></textarea>
+            </div>
+            
+            <button type="button" class="submit-btn" id="submitBtn" onclick="generateDocuments()">
+                Сгенерировать документы
+            </button>
+            
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = '/legal/api';
+        let uploadedFiles = [];
+
+        function handleFiles(files) {
+            uploadedFiles = [...uploadedFiles, ...Array.from(files)];
+            updateFileList();
+        }
+
+        function updateFileList() {
+            const container = document.getElementById('selectedFiles');
+            const list = document.getElementById('fileList');
+            if (uploadedFiles.length === 0) {
+                container.classList.remove('visible');
+                return;
+            }
+            container.classList.add('visible');
+            list.innerHTML = uploadedFiles.map((file, i) => 
+                `<div class="file-tag">📄 ${file.name} <button onclick="removeFile(${i})">×</button></div>`
+            ).join('');
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            updateFileList();
+        }
+
+        function toggleType(card) {
+            const cb = card.querySelector('input');
+            cb.checked = !cb.checked;
+            card.classList.toggle('selected', cb.checked);
+        }
+
+        function showError(msg) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        async function generateDocuments() {
+            hideError();
+            
+            const selectedTypes = Array.from(document.querySelectorAll('input[name="docType"]:checked')).map(cb => cb.value);
+            const comment = document.getElementById('userComment').value;
+            const btn = document.getElementById('submitBtn');
+            
+            if (selectedTypes.length === 0) {
+                showError('Выберите хотя бы один тип документа');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Отправка...';
+
+            try {
+                // Get or create token
+                let token = localStorage.getItem('token');
+                if (!token) {
+                    const email = 'user_' + Date.now() + '@legalai.ru';
+                    const regRes = await fetch(`${API_BASE}/register`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({username: email, email: email, password: 'pass123'})
+                    });
+                    if (regRes.ok) {
+                        const loginRes = await fetch(`${API_BASE}/login`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({username: email, password: 'pass123'})
+                        });
+                        const loginData = await loginRes.json();
+                        if (loginData.success) {
+                            token = loginData.data.token;
+                            localStorage.setItem('token', token);
+                        }
+                    }
+                }
+                
+                if (!token) {
+                    showError('Не удалось авторизоваться');
+                    btn.disabled = false;
+                    btn.textContent = 'Сгенерировать документы';
+                    return;
+                }
+
+                // Upload
+                const formData = new FormData();
+                formData.append('document_type', selectedTypes[0]);
+                formData.append('case_title', 'Дело от ' + new Date().toLocaleDateString());
+                formData.append('custom_request', comment);
+                uploadedFiles.forEach(file => formData.append('files', file));
+
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    headers: {'Authorization': 'Bearer ' + token},
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = `/legal/processing.html?case_id=${data.data.case.id}`;
+                } else {
+                    showError(data.message || 'Ошибка при создании дела');
+                    btn.disabled = false;
+                    btn.textContent = 'Сгенерировать документы';
+                }
+            } catch (err) {
+                showError('Ошибка: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = 'Сгенерировать документы';
+            }
+        }
+    </script>
+</body>
+</html>
